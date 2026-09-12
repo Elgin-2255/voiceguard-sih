@@ -9,15 +9,38 @@ body { font-family: Arial; background: #f0f4ff; text-align: center; padding: 40p
 h1 { color: #2563eb; }
 button { background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 16px; }
 input { margin: 20px 0; }
+#result { margin-top:20px; font-weight:bold; }
 </style>
 </head>
 <body>
 <div class="card">
 <h1>🛡️ VoiceGuard</h1>
 <p>Upload a suspicious voice note to check if it's AI-cloned</p>
-<input type="file" accept="audio/*"><br>
-<button>Check Voice</button>
+<input type="file" id="fileInput" accept="audio/*"><br>
+<button onclick="checkVoice()">Check Voice</button>
+<p id="result"></p>
 <p style="font-size:12px;color:gray;margin-top:20px;">Free • No signup • Made for India</p>
 </div>
+<script>
+async function checkVoice() {
+  const fileInput = document.getElementById('fileInput');
+  const result = document.getElementById('result');
+  if (!fileInput.files[0]) { result.innerText = "Please choose a file first"; return; }
+  result.innerText = "Checking... please wait";
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  try {
+    const res = await fetch('https://voiceguard-dbi4.onrender.com/check', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.error) { result.innerText = "Error: " + data.error; }
+    else { result.innerText = data.label + " - " + data.confidence + "%"; }
+  } catch(e) {
+    result.innerText = "Backend sleeping, try again in 30 sec";
+  }
+}
+</script>
 </body>
 </html>
